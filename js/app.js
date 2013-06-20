@@ -8,8 +8,8 @@ var myApp = angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.d
     })
     .config(['$routeProvider', function($routeProvider) {
         $routeProvider.when('/', {templateUrl: 'partials/homeView.html', controller: 'HomeCtrl'});
-        $routeProvider.when('/view1', {templateUrl: 'partials/notificationView.html'});
-        $routeProvider.when('/view2', {templateUrl: 'partials/geolocationView.html'});
+        $routeProvider.when('/view1', {templateUrl: 'partials/chaptersView.html'});
+        $routeProvider.when('/view2', {templateUrl: 'partials/searchByIndustry.html'});
         $routeProvider.when('/view3', {templateUrl: 'partials/accelerometerView.html'});
         $routeProvider.when('/view4', {templateUrl: 'partials/deviceInfoView.html'});
         $routeProvider.when('/view5', {templateUrl: 'partials/cameraView.html'});

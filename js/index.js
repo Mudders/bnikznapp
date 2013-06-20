@@ -39,5 +39,10 @@ var app = {
             angular.bootstrap(document);
         });*/
         new FastClick(document.body);
+
+        // Put in a call to check whether this is a new install and need to download data...
+        this.store = new WebSqlStore(function() {
+            self.route();
+        });
     }
 };
