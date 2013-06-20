@@ -1,7 +1,7 @@
 var WebSqlStore = function(successCallback, errorCallback) {
     //console.log(new Date().getTime())
     var $scope = angular.element('body').scope();
-    //console.log($scope.device = device);
+    alert($scope.device.name);
     this.initializeDatabase = function(successCallback, errorCallback) {
         var self = this;
         this.db = window.openDatabase("BNIDB1", "1.0", "BNI DB", 200000);
