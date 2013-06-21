@@ -1,7 +1,7 @@
 var WebSqlStore = function(successCallback, errorCallback) {
     //console.log(new Date().getTime())
     var $scope = angular.element('body').scope();
-    alert($scope.device.name);
+    //alert("SDf");
     this.initializeDatabase = function(successCallback, errorCallback) {
         var self = this;
         this.db = window.openDatabase("BNIDB1", "1.0", "BNI DB", 200000);
@@ -12,21 +12,25 @@ var WebSqlStore = function(successCallback, errorCallback) {
                     tx.executeSql(sql, [], function(tx, results) {
                         if (results.rows.length == 0) {
                           // no user table so means we need to create all our tables...
-                          //self.createChapterTable(tx);
-                          //self.createMemberTable(tx);
-                          //self.createKeywordTable(tx);
-                          //self.createKeywordMemberTable(tx);
-                          //self.createUserTable(tx);
+                          self.createChapterTable(tx);
+                          self.createMemberTable(tx);
+                          self.createKeywordTable(tx);
+                          self.createKeywordMemberTable(tx);
+                          self.createUserTable(tx);
+                          // Now we need to pass through to the server the details of this user.
+                          self.loadXMLDoc(tx);
+                        }
+                        else {
+                          self.loadXMLDoc(tx, "123456", "Android", function( returnValue ){
+                              this.db = window.openDatabase("BNIDB1", "1.0", "BNI DB", 200000);
+                              this.db.transaction(
+                              function(tx) {
+                                eval( returnValue );
+                              });
+                          });
                         }
                     });
-                    //self.createChapterTable(tx);
-                    //self.addChapterData(tx);
-                    //self.createMemberTable(tx);
-                    //self.addMemberData(tx);
-                    //self.createKeywordTable(tx);
-                    //self.addKeywordData(tx);
-                    //self.createKeywordMemberTable(tx);
-                    //self.addKeywordMemberData(tx);
+
                 },
                 function(error) {
                     console.log('Transaction error: ' + error);
@@ -58,26 +62,6 @@ var WebSqlStore = function(successCallback, errorCallback) {
                 });
     }
 
-    this.addChapterData = function(tx, chapters) {
-        var chapters = [
-            ];
-        var l = chapters.length;
-        var sql = "INSERT OR REPLACE INTO chapter " +
-            "(id, chaptername, venue, city, area, meetingday, meetingtime) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        var e;
-        for (var i = 0; i < l; i++) {
-            e = chapters[i];
-            tx.executeSql(sql, [e.id, e.chaptername, e.venue, e.city, e.area, e.meetingday, e.meetingtime],
-                    function() {
-                        console.log('INSERT success');
-                    },
-                    function(tx, error) {
-                        alert('INSERT error: ' + error.message);
-                    });
-        }
-    }
-
     this.createMemberTable = function(tx) {
         tx.executeSql('DROP TABLE IF EXISTS member');
         var sql = "CREATE TABLE IF NOT EXISTS member ( " +
@@ -98,26 +82,6 @@ var WebSqlStore = function(successCallback, errorCallback) {
                 });
     }
 
-    this.addMemberData = function(tx, members) {
-        var members = [
-          ];
-        var l = members.length;
-        var sql = "INSERT OR REPLACE INTO member " +
-            "(id, name, chapterId, company, phone, mobile, website, address) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        var e;
-        for (var i = 0; i < l; i++) {
-            e = members[i];
-            tx.executeSql(sql, [e.id, e.name, e.chapterId, e.company, e.phone, e.mobile, e.website, e.address],
-                    function() {
-                        console.log('INSERT success');
-                    },
-                    function(tx, error) {
-                        alert('INSERT error: ' + error.message);
-                    });
-        }
-    }
-
     this.createKeywordTable = function(tx) {
         tx.executeSql('DROP TABLE IF EXISTS keyword');
         var sql = "CREATE TABLE IF NOT EXISTS keyword ( " +
@@ -130,27 +94,6 @@ var WebSqlStore = function(successCallback, errorCallback) {
                 function(tx, error) {
                     alert('Create table error: ' + error.message);
                 });
-    }
-
-    this.addKeywordData = function(tx, keywords) {
-        var keywords = [
-
-          ];
-        var l = keywords.length;
-        var sql = "INSERT OR REPLACE INTO keyword " +
-            "(id, keyword) " +
-            "VALUES (?, ?)";
-        var e;
-        for (var i = 0; i < l; i++) {
-            e = keywords[i];
-            tx.executeSql(sql, [e.id, e.keyword],
-                    function() {
-                        console.log('INSERT success');
-                    },
-                    function(tx, error) {
-                        alert('INSERT error: ' + error.message);
-                    });
-        }
     }
 
     this.createKeywordMemberTable = function(tx) {
@@ -167,43 +110,6 @@ var WebSqlStore = function(successCallback, errorCallback) {
                     alert('Create table error: ' + error.message);
                 });
     }
-
-    this.addKeywordMemberData = function(tx, keywordmembers) {
-        var keywordmembers = [
-          ];
-        var l = keywordmembers.length;
-        var sql = "INSERT OR REPLACE INTO keywordmember " +
-            "(id, keyid, memberid) " +
-            "VALUES (?, ?, ?)";
-        var e;
-        for (var i = 0; i < l; i++) {
-            e = keywordmembers[i];
-            tx.executeSql(sql, [e.id, e.keyid, e.memberid],
-                    function() {
-                        console.log('INSERT success');
-                    },
-                    function(tx, error) {
-                        alert('INSERT error: ' + error.message);
-                    });
-        }
-    }
-
-    this.createUserTable = function(tx) {
-        tx.executeSql('DROP TABLE IF EXISTS user');
-        var sql = "CREATE TABLE IF NOT EXISTS user ( " +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "uuid VARCHAR(50), " +
-            "platform VARCHAR(50), " +
-            "lastupdate VARCHAR(50))";
-        tx.executeSql(sql, null,
-                function() {
-                    console.log('Create table success');
-                },
-                function(tx, error) {
-                    alert('Create table error: ' + error.message);
-                });
-    }
-
 
     this.findByName = function(searchKey, callback) {
         this.db.transaction(
@@ -352,4 +258,99 @@ var WebSqlStore = function(successCallback, errorCallback) {
 
     this.initializeDatabase(successCallback, errorCallback);
 
+    this.loadXMLDoc = function (tx, uuid, platform, cb_func)
+    {
+      var xmlhttp;
+      if (window.XMLHttpRequest)
+        {// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+        }
+      else
+        {// code for IE6, IE5
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+      xmlhttp.onreadystatechange=function()
+        {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+          {
+            cb_func(xmlhttp.responseText);
+          }
+        }
+      xmlhttp.open("POST","http://dev.maltec.co.za/bnikzn/cgi-bin/server.php",true);
+      xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+      xmlhttp.send("uuid=" + uuid + "&platform=" + platform);
+  }
+
 }
+    function addChapterData(tx, chapters) {
+        var l = chapters.length;
+        var sql = "INSERT OR REPLACE INTO chapter " +
+            "(id, chaptername, venue, city, area, meetingday, meetingtime) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        var e;
+        for (var i = 0; i < l; i++) {
+            e = chapters[i];
+            tx.executeSql(sql, [e.id, e.chaptername, e.venue, e.city, e.area, e.meetingday, e.meetingtime],
+                    function() {
+                        console.log('INSERT success');
+                    },
+                    function(tx, error) {
+                        alert('INSERT error: ' + error.message);
+                    });
+        }
+    }
+
+    function addMemberData(tx, members) {
+        var l = members.length;
+        var sql = "INSERT OR REPLACE INTO member " +
+            "(id, name, chapterId, company, phone, mobile, website, address) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        var e;
+        for (var i = 0; i < l; i++) {
+            e = members[i];
+            tx.executeSql(sql, [e.id, e.name, e.chapterId, e.company, e.phone, e.mobile, e.website, e.address],
+                    function() {
+                        console.log('INSERT success');
+                    },
+                    function(tx, error) {
+                        alert('INSERT error: ' + error.message);
+                    });
+        }
+    }
+
+    function addKeywordData(tx, keywords) {
+        var l = keywords.length;
+        var sql = "INSERT OR REPLACE INTO keyword " +
+            "(id, keyword) " +
+            "VALUES (?, ?)";
+        var e;
+        for (var i = 0; i < l; i++) {
+            e = keywords[i];
+            tx.executeSql(sql, [e.id, e.keyword],
+                    function() {
+                        console.log('INSERT success');
+                    },
+                    function(tx, error) {
+                        alert('INSERT error: ' + error.message);
+                    });
+        }
+    }
+
+    function addKeywordMemberData(tx, keywordmembers) {
+        var l = keywordmembers.length;
+        var sql = "INSERT OR REPLACE INTO keywordmember " +
+            "(id, keyid, memberid) " +
+            "VALUES (?, ?, ?)";
+        var e;
+        for (var i = 0; i < l; i++) {
+            e = keywordmembers[i];
+            tx.executeSql(sql, [e.id, e.keyid, e.memberid],
+                    function() {
+                        console.log('INSERT success');
+                    },
+                    function(tx, error) {
+                        alert('INSERT error: ' + error.message);
+                    });
+        }
+    }
+

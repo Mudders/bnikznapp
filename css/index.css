@@ -75,6 +75,11 @@
     text-align: center;
 }
 
+.righterize {
+    display: block;
+    margin: 0 auto;
+    text-align: right;
+}
 .home-icon {
     background: url("../img/home.svg") no-repeat;
     -webkit-background-size: cover;
